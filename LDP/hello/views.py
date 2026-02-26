@@ -1,4 +1,5 @@
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect, HttpResponsePermanentRedirect
+from django.http import HttpResponseNotFound, HttpResponseBadRequest, HttpResponseForbidden
 
 # We can send html-code in Response
 
@@ -51,14 +52,69 @@ def HttpresponseDemostration(request):
 # Параметры маршрута
 # Если мы не укажем параметры в маршруте - будет ошибка 404. Чтобы избежать, можно поставить параметры по умолчанию
 # def user(request, name, age):
-def user(request, name="Undefined", age=0):
-    if name.lower() in ['hack']:
-        return HttpResponse(
-            "<h2>Bad response</h2>",
-            status = 333,
-            reason = "Unknown data",
-        )
+# def user(request, name="Undefined", age=0):
+#     if name.lower() in ['hack']:
+#         return HttpResponse(
+#             "<h2>Bad response</h2>",
+#             status = 333,
+#             reason = "Unknown data",
+#         )
 
-    return HttpResponse(
-        f"<h2>Имя: {name}, возраст: {age}</h2>"
-    )
+#     return HttpResponse(
+#         f"<h2>Имя: {name}, возраст: {age}</h2>"
+#     )
+
+
+def products(request, id):
+    return HttpResponse(f"Продукт {id}")
+
+def comments(request, id):
+    return HttpResponse(f"Комментарии про продукт {id}")
+
+def questions(request, id):
+    return HttpResponse(f"Вопросы про продукт {id}")
+
+
+def user(request:HttpResponse):
+    # Для получения параметра строки запроса применяется req.GET.get('имя параметра')
+    # name = request.GET.get('name')
+    # age = request.GET.get('age')
+
+    # Если не переданы аргументы /user/ - будут применяться аргументы по умолчанию
+    name = request.GET.get("name", "Undefined")
+    age = request.GET.get("age", 0)
+
+    return HttpResponse(f"""
+        <h1>Информация: </h1>
+        <h1>{name}</h1>
+        <h2>{age}</h2>
+    """)
+
+
+# Редирект функция
+def redirectFunc(request):
+    return HttpResponseRedirect('/about')
+
+# 
+def index2(request, id):
+    peoples = ["Maxim", "Bob", "Daniil", "Alexander"]
+
+    if id in range(len(peoples)):
+        return HttpResponse(f"""
+            <h1>{peoples[id]}</h1>
+        """)
+    else:
+        return HttpResponseNotFound("Error: Not found")
+    
+def access(request, age=0):
+    age = request.GET.get('age')
+    age = int(age)
+
+    if age not in range(1, 111):
+        return HttpResponseBadRequest("Неверный возраст")
+    else:
+        if age > 17:
+            return HttpResponse("Доступ разрешен")
+        else:
+            return HttpResponseForbidden("Доступ запрещен: недостаточно лет")
+        
